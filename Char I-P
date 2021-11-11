@@ -1,0 +1,17 @@
+package com.company;
+
+import java.util.Scanner;
+
+public class Char {
+    public static void main(String[] args) {
+        Scanner input  = new Scanner(System.in);
+        char ch = input.next().trim().charAt(0);
+        System.out.println(input);
+        Scanner scn = new Scanner(System.in);
+        int  i = scn.nextInt();
+        for (int j = 0; j <=5 ; j++)
+        {
+            System.out.println(i);
+        }
+    }
+}
