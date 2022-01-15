@@ -1,0 +1,34 @@
+public class Solution {
+    public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+       
+        if (l1 == null && l2 == null) return null;
+        long num1 = toInteger(l1);
+        long num2 = toInteger(l2);
+        long sum = num1 + num2;
+         
+        ListNode result = new ListNode(0);
+        ListNode head = result;
+         
+        do {
+            int digit = (int)(sum % 10);
+            sum /= 10;
+             
+            ListNode node = new ListNode(digit);
+            head.next = node;
+            head = node;
+        } while (sum != 0);
+               
+        return result.next;
+    }
+     
+    private long toInteger(ListNode list) {
+        long num = 0;
+        int i = 0;
+        while (list != null) {
+            num += list.val * Math.pow(10, i++);
+            list = list.next;
+        }
+        return num;
+    }
+     
+}
