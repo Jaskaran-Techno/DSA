@@ -1,0 +1,56 @@
+public class SimpleSolution {
+    private int[] arr1;
+    private int[] arr2;
+    
+    public SimpleSolution(int[] arr1, int[] arr2) {
+        this.arr1 = arr1;
+        this.arr2 = arr2;
+    }
+
+    private int[] merge() {
+        int[] res = new int[this.arr1.length + this.arr2.length];
+        //index for arr1
+        int i=0;
+        //index for arr2
+        int j=0;
+        // result index
+        int k=0;
+
+        while (i < this.arr1.length && j < this.arr2.length) {
+            if (this.arr1[i] < this.arr2[j]) {
+                res[k] = this.arr1[i];
+                i++;
+            }
+            else {
+                res[k] = this.arr2[j];
+                j++;
+            }
+            k++;
+        }
+        for (; i<this.arr1.length; i++) {
+            res[k] = this.arr1[i];
+            k++;
+        }
+        for (; j<this.arr2.length; j++) {
+            res[k] = this.arr2[j];
+            k++;
+        }
+
+        return res;
+    }
+
+    public double getMedian() {
+        int[] mergedArray = this.merge();
+        int l = mergedArray.length;
+        
+        //if length is odd. Median is middle number
+        //else, its average of middle two elements
+
+        if (l % 2 != 0) {
+            return mergedArray[l/2];
+        }
+
+        //else
+        return (double)(mergedArray[(l-1)/2] + mergedArray[(l)/2]) / 2;
+    }
+}
