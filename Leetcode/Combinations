@@ -1,0 +1,26 @@
+class Main
+{
+  static List<List<Integer>> res = new ArrayList<List<Integer>>();
+  
+    public static void rec(int i, int k, int n, ArrayList<Integer> cur){
+        if(cur.size()==k) {
+            res.add(new ArrayList(cur));
+        } else {
+            for(int j=i;j<=n;j++) {
+                cur.add(j);
+                rec(j+1, k, n, cur);
+                cur.remove(cur.size()-1);
+            }
+        }
+    }
+    
+    public static List<List<Integer>> combine(int n, int k) {
+        ArrayList<Integer> cur = new ArrayList<Integer>();
+        rec(1, k, n, cur);
+        return res;
+    }
+  public static void main (String[] args) throws java.lang.Exception{
+    List<List<Integer>> res = combine(4, 2);
+    System.out.println(res);
+  }
+}
