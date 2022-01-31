@@ -1,0 +1,56 @@
+import java.util.Properties.*;
+public class SendMa{
+    public static void main(String[] args) {
+
+sendEmail("smtp.gmail.com", //SMTP Server Address
+        "587", //SMTP Port Number
+        "true", //Enable Authorization
+        "true", //Enable TLS
+        "<YourAddress>@gmail.com", //Your SMTP Username
+        "<YourPassword>", //Your SMTP Password
+        "<From Address>", //Sender Address
+        "<To Address>", //Recipient Address
+        "<Subject>", //Message Subject
+        "<Body>"); //Message Body
+
+
+//Below is the function for sending the email
+static void sendEmail(
+        String smtpAddress,
+        String smtpPort,
+        String enableTLS,
+        String enableAuth,
+final String username,
+final String password,
+        String fromAddress,
+        String toAddress,
+        String mySubject,
+        String myMessage){
+
+        Properties props = new Properties();
+        props.put("mail.smtp.starttls.enable", enableTLS);
+        props.put("mail.smtp.auth", enableAuth);
+        props.put("mail.smtp.host", smtpAddress);
+        props.put("mail.smtp.port", smtpPort);
+
+        Session session = Session.getInstance(props,
+        new javax.mail.Authenticator() {
+protected PasswordAuthentication getPasswordAuthentication() {
+        return new PasswordAuthentication(username, password);
+        }
+        });
+
+        try {
+        Message message = new MimeMessage(session);
+        message.setFrom(new InternetAddress(fromAddress));
+        message.setRecipients(Message.RecipientType.TO,
+        InternetAddress.parse(toAddress));
+        message.setSubject(mySubject);
+        message.setText(myMessage);
+        Transport.send(message);
+        System.out.print("Sent");
+
+        } catch (Exception e) {
+        System.out.print(e);
+        }
+        }
