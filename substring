@@ -1,0 +1,11 @@
+package com.company;
+
+public class Substr {
+    public static void main(String[] args) {
+        String a = "Harry is a good boy";
+        String name = a.substring(11, 16);
+        System.out.println(name);
+    }
+}
+
+// O/P => good
