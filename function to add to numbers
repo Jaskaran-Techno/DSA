@@ -1,0 +1,16 @@
+import java.util.Scanner;
+
+public class Integerfunction {
+    public static int sum(int sum){
+        System.out.println(sum);
+        return sum;
+    }
+
+    public static void main(String[] args) {
+        Scanner scn = new Scanner(System.in);
+        int n1 = scn.nextInt();
+        int n2 = scn.nextInt();
+
+        sum(n1+n2);
+    }
+}
