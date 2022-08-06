@@ -1,0 +1,587 @@
+cd ${CUR_DIR}
+
+    simple_obfs_ver=$(wget --no-check-certificate -qO- https://api.github.com/repos/shadowsocks/simple-obfs/releases | grep -o '"tag_name": ".*"' | head -n 1| sed 's/"//g;s/v//g' | sed 's/tag_name: //g')
+    [ -z ${simple_obfs_ver} ] && echo -e "${Error} 获取 simple-obfs 最新版本失败." && exit 1
+    [ -z ${simple_obfs_ver} ] && _echo -e "获取 simple-obfs 最新版本失败." && exit 1
+
+    git clone https://github.com/shadowsocks/simple-obfs.git
+    [ -d simple-obfs ] && cd simple-obfs || echo -e "${Error} git clone simple-obfs 失败."
+    [ -d simple-obfs ] && cd simple-obfs || _echo -e "git clone simple-obfs 失败."
+    git submodule update --init --recursive
+
+    if centosversion 6; then
+        if [ ! "$(command -v autoconf268)" ]; then
+            echo -e "${Info} 开始安装 autoconf268."
+            yum install -y autoconf268 > /dev/null 2>&1 || echo -e "${Error} autoconf268 安装失败."
+            _echo -i "开始安装 autoconf268."
+            yum install -y autoconf268 > /dev/null 2>&1 || _echo -e "autoconf268 安装失败."
+        fi
+        # replace command autoreconf to autoreconf268
+        sed -i 's/autoreconf/autoreconf268/' autogen.sh
+@@ -20,16 +20,16 @@ install_simple_obfs(){
+        sed -i 's@^#include <ev.h>@#include <libev/ev.h>@' src/server.h
+    fi
+
+    echo -e "${Info} 编译安装 simple-obfs-${simple_obfs_ver}."
+    _echo -i "编译安装 simple-obfs-${simple_obfs_ver}."
+    ./autogen.sh
+    ./configure --disable-documentation
+    make
+    make install
+    if [ ! "$(command -v obfs-server)" ]; then
+        echo -e "${Error} simple-obfs-${simple_obfs_ver} 安装失败."
+        _echo -e "simple-obfs-${simple_obfs_ver} 安装失败."
+        install_cleanup
+        exit 1
+    fi
+    [ -f ${SIMPLE_OBFS_BIN_PATH} ] && ln -fs ${SIMPLE_OBFS_BIN_PATH} /usr/bin
+    echo -e "${Info} simple-obfs-${simple_obfs_ver} 安装成功."
+    _echo -i "simple-obfs-${simple_obfs_ver} 安装成功."
+} 
+  7  
+install/simple_tls_install.sh
+@@ -4,17 +4,14 @@ install_simple_tls(){
+    if [ ! "$(command -v unzip)" ]; then
+        package_install "unzip" > /dev/null 2>&1
+    fi
+
+    unzip -oq ${simple_tls_file}.zip
+    chmod +x simple-tls
+    mv simple-tls ${SIMPLE_TLS_INSTALL_PATH}
+    if [ $? -eq 0 ]; then
+        [ -f ${SIMPLE_TLS_BIN_PATH} ] && ln -fs ${SIMPLE_TLS_BIN_PATH} /usr/bin
+        echo -e "${Info} simple-tls安装成功."
+        _echo -i "simple-tls安装成功."
+    else
+        echo
+        echo -e "${Error} simple-tls安装失败."
+        echo
+        _echo -e "simple-tls安装失败."
+        install_cleanup
+        exit 1
+    fi
+  6  
+install/v2ray_plugin_install.sh
+@@ -7,11 +7,9 @@ install_v2ray_plugin(){
+    mv v2ray-plugin_linux_${ARCH} ${V2RAY_PLUGIN_BIN_PATH}
+    if [ $? -eq 0 ]; then
+        [ -f ${V2RAY_PLUGIN_BIN_PATH} ] && ln -fs ${V2RAY_PLUGIN_BIN_PATH} /usr/bin
+        echo -e "${Info} v2ray-plugin安装成功."
+        _echo -i "v2ray-plugin安装成功."
+    else
+        echo
+        echo -e "${Error} v2ray-plugin安装失败."
+        echo
+        _echo -e "v2ray-plugin安装失败."
+        install_cleanup
+        exit 1
+    fi
+  6  
+install/xray_plugin_install.sh
+@@ -7,11 +7,9 @@ install_xray_plugin(){
+    mv xray-plugin_linux_${ARCH} ${XRAY_PLUGIN_BIN_PATH}
+    if [ $? -eq 0 ]; then
+        [ -f ${XRAY_PLUGIN_BIN_PATH} ] && ln -fs ${XRAY_PLUGIN_BIN_PATH} /usr/bin
+        echo -e "${Info} xray-plugin安装成功."
+        _echo -i "xray-plugin安装成功."
+    else
+        echo
+        echo -e "${Error} xray-plugin安装失败."
+        echo
+        _echo -e "xray-plugin安装失败."
+        install_cleanup
+        exit 1
+    fi
+  14  
+ss-plugins.sh
+@@ -243,9 +243,7 @@ _echo(){
+        echo -e "${Info} ${2}"
+        ;;
+    -e|error)
+        echo
+        echo -e "${Error} ${2}"
+        echo
+        ;;
+    -t|tip)
+        echo
+@@ -453,18 +451,18 @@ package_install(){
+    if check_sys packageManager yum; then
+        yum install -y $1 > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo -e "${Error} 安装 $1 失败."
+            _echo -e "安装 $1 失败."
+            exit 1
+        fi
+    elif check_sys packageManager apt; then
+        apt-get -y update > /dev/null 2>&1
+        apt-get -y install $1 > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo -e "${Error} 安装 $1 失败."
+            _echo -e "安装 $1 失败."
+            exit 1
+        fi
+    fi
+    echo -e "${Info} $1 安装完成."
+    _echo -i "$1 安装完成."
+}
+
+improt_package(){
+@@ -594,7 +592,7 @@ check_script_update(){
+    local isShow="${1:-"show"}"
+
+    SHELL_VERSION_NEW=$(wget --no-check-certificate -qO- "https://git.io/fjlbl"|grep 'SHELL_VERSION="'|awk -F "=" '{print $NF}'|sed 's/\"//g'|head -1)
+    [ -z "${SHELL_VERSION_NEW}" ] && echo -e "${Error} 无法链接到 Github !" && exit 0
+    [ -z "${SHELL_VERSION_NEW}" ] && _echo -e "无法链接到 Github !" && exit 0
+    if version_gt "${SHELL_VERSION_NEW}" "${SHELL_VERSION}"; then
+        _echo -u "${Green}当前脚本版本为：${SHELL_VERSION} 检测到有新版本可更新.${suffix}"
+        _echo -d "按任意键开始…或按Ctrl+C取消"
+@@ -623,7 +621,7 @@ choose_script_bbr(){
+            source <(curl -sL "${CHIAKGE_BBR_SCRIPT_URL}")
+            ;;
+        *)
+            echo -e "${Error} 请输入正确的数字 [1-2]"
+            _echo -e "请输入正确的数字 [1-2]"
+            ;;
+    esac
+}
+@@ -1067,7 +1065,7 @@ whether_to_install_the_plugin(){
+                isInstallPlugin=No
+                ;;
+            *)
+                _echo -e "${Error} 输入有误，请重新输入."
+                _echo -e "输入有误，请重新输入."
+                continue
+                ;;
+        esac
+  44  
+utils/ck_user_manager.sh
+@@ -192,10 +192,7 @@ add_restricted_users_logic_code(){
+                break
+                ;;
+            *)
+                echo
+                echo -e "${Error} 输入有误，请重新输入!"
+                echo
+
+                _echo -e "输入有误，请重新输入!"
+                continue
+                ;;
+        esac
+@@ -224,10 +221,7 @@ add_unrestricted_users_logic_code(){
+                break
+                ;;
+            *)
+                echo
+                echo -e "${Error} 输入有误，请重新输入!"
+                echo
+
+                _echo -e "输入有误，请重新输入!"
+                continue
+                ;;
+        esac
+@@ -256,9 +250,7 @@ del_restricted_users_logic_code(){
+            # Del the user by UID
+            del_restricted_users
+        else
+            echo
+            echo -e "${Error} 请输入一个正确的数 [1-${#UsersArray[*]}]"
+            echo
+            _echo -e "请输入一个正确的数 [1-${#UsersArray[*]}]"
+            continue
+        fi
+
+@@ -275,10 +267,7 @@ del_restricted_users_logic_code(){
+                break
+                ;;
+            *)
+                echo
+                echo -e "${Error} 输入有误，请重新输入!"
+                echo
+
+                _echo -e "输入有误，请重新输入!"
+                continue
+                ;;
+        esac
+@@ -307,9 +296,7 @@ del_unrestricted_users_logic_cade(){
+            # Del the user by UID
+            del_unrestricted_users
+        else
+            echo
+            echo -e "${Error} 请输入一个正确的数 [1-${#UIDS[*]}]"
+            echo
+            _echo -e "请输入一个正确的数 [1-${#UIDS[*]}]"
+            continue
+        fi
+
+@@ -326,10 +313,7 @@ del_unrestricted_users_logic_cade(){
+                break
+                ;;
+            *)
+                echo
+                echo -e "${Error} 输入有误，请重新输入!"
+                echo
+
+                _echo -e "输入有误，请重新输入!"
+                continue
+                ;;
+        esac
+@@ -395,9 +379,7 @@ ck2_users_manager(){
+                    add_unrestricted_users_logic_code
+                    ;;
+                *)
+                    echo
+                    echo -e "${Error} 请输入正确的数字 [1-2]"
+                    echo
+                    _echo -e "请输入正确的数字 [1-2]"
+                    ;;
+            esac
+            ;;
+@@ -416,9 +398,7 @@ ck2_users_manager(){
+                    list_unrestricted_users
+                    ;;
+                *)
+                    echo
+                    echo -e "${Error} 请输入正确的数字 [1-2]"
+                    echo
+                    _echo -e "请输入正确的数字 [1-2]"
+                    ;;
+            esac
+            ;;
+@@ -437,16 +417,12 @@ ck2_users_manager(){
+                    del_unrestricted_users_logic_cade
+                    ;;
+                *)
+                    echo
+                    echo -e "${Error} 请输入正确的数字 [1-2]"
+                    echo
+                    _echo -e "请输入正确的数字 [1-2]"
+                    ;;
+            esac
+            ;;
+        *)
+            echo
+            echo -e "${Error} 请输入正确的数字 [1-3]"
+            echo
+            _echo -e "请输入正确的数字 [1-3]"
+            ;;
+    esac
+}
+  44  
+utils/dependencies.sh
+@@ -23,7 +23,7 @@ error_detect_deps_of_ubuntu(){
+    sudo killall -q apt apt-get
+    ${command} > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo -e "${Error} 依赖包${Red}${depend}${suffix}安装失败，请检查. "
+        _echo -e "依赖包${Red}${depend}${suffix}安装失败，请检查. "
+        echo "Checking the error message and run the script again."
+        exit 1
+    fi
+@@ -43,7 +43,7 @@ error_asciidos_deps_of_ubuntu1901(){
+        fi
+        ${command} > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+            echo -e "${Error} 依赖包${Red}${depend}${suffix}安装失败，请检查. "
+            _echo -e "依赖包${Red}${depend}${suffix}安装失败，请检查. "
+            echo "Checking the error message and run the script again."
+            exit 1
+        fi
+@@ -53,7 +53,7 @@ error_asciidos_deps_of_ubuntu1901(){
+error_detect_depends(){
+    local command=$1
+    local depend=`echo "${command}" | awk '{print $4}'`
+    echo -e "${Info} 开始安装依赖包 ${depend}"
+    _echo -i "开始安装依赖包 ${depend}"
+    ${command} > /dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        if check_sys sysRelease ubuntu || check_sys sysRelease debian; then
+@@ -63,7 +63,7 @@ error_detect_depends(){
+                  error_detect_deps_of_ubuntu "${command}" "${depend}"
+            fi
+        else
+            echo -e "${Error} 依赖包${Red}${depend}${suffix}安装失败，请检查. "
+            _echo -e "依赖包${Red}${depend}${suffix}安装失败，请检查. "
+            echo "Checking the error message and run the script again."
+            exit 1
+        fi
+@@ -74,18 +74,18 @@ install_dependencies(){
+    local depends=($*)
+
+    if check_sys packageManager yum; then
+        echo -e "${Info} 检查EPEL存储库."
+        _echo -i "检查EPEL存储库."
+        if [ ! -f /etc/yum.repos.d/epel.repo ]; then
+            yum install -y epel-release > /dev/null 2>&1
+        fi
+        [ ! -f /etc/yum.repos.d/epel.repo ] && echo -e "${Error} 安装EPEL存储库失败，请检查它。" && exit 1
+        [ ! -f /etc/yum.repos.d/epel.repo ] && _echo -e "安装EPEL存储库失败，请检查它。" && exit 1
+        [ ! "$(command -v yum-config-manager)" ] && yum install -y yum-utils > /dev/null 2>&1
+        if centosversion 8; then
+            [ x"$(yum repolist epel | grep -w epel | awk '{print $NF}')" != x"enabled" ] && yum-config-manager --enable epel > /dev/null 2>&1
+        else
+            [ x"$(yum-config-manager epel | grep -w enabled | awk '{print $3}')" != x"True" ] && yum-config-manager --enable epel > /dev/null 2>&1
+        fi
+        echo -e "${Info} EPEL存储库检查完成."
+        _echo -i "EPEL存储库检查完成."
+
+        for depend in ${depends[@]}; do
+            error_detect_depends "yum -y install ${depend}"
+@@ -123,14 +123,14 @@ install_libsodium(){
+    local installStatus=$1
+
+    cd ${CUR_DIR}
+    echo -e "${Info} 下载${LIBSODIUM_FILE}."
+    _echo -i "下载${LIBSODIUM_FILE}."
+    download "${LIBSODIUM_FILE}.tar.gz" "${LIBSODIUM_URL}"
+    echo -e "${Info} 解压${LIBSODIUM_FILE}."
+    _echo -i "解压${LIBSODIUM_FILE}."
+    tar zxf ${LIBSODIUM_FILE}.tar.gz && cd ${LIBSODIUM_FILE}
+    echo -e "${Info} 编译安装${LIBSODIUM_FILE}."
+    _echo -i "编译安装${LIBSODIUM_FILE}."
+    ./configure --prefix=/usr && make && make install
+    if [ $? -ne 0 ]; then
+        echo -e "${Error} ${LIBSODIUM_FILE} ${installStatus}失败 !"
+        _echo -e "${LIBSODIUM_FILE} ${installStatus}失败 !"
+        install_cleanup
+        exit 1
+    fi
+@@ -139,7 +139,7 @@ install_libsodium(){
+        mkdir -p $(dirname ${LIBSODIUM_VERSION_FILE})
+    fi
+    echo ${LIBSODIUM_VERSION} > ${LIBSODIUM_VERSION_FILE}
+    echo -e "${Info} ${LIBSODIUM_FILE} ${installStatus}成功 !"
+    _echo -i "${LIBSODIUM_FILE} ${installStatus}成功 !"
+}
+
+install_libsodium_logic(){
+@@ -152,7 +152,7 @@ install_libsodium_logic(){
+        if check_latest_version ${currentLibsodiumVer} ${latestLibsodiumVer}; then
+            install_libsodium '更新'
+        else
+            echo -e "${Info} ${LIBSODIUM_FILE} 已经安装最新版本."
+            _echo -i "${LIBSODIUM_FILE} 已经安装最新版本."
+        fi
+    fi
+}
+@@ -161,17 +161,17 @@ install_mbedtls(){
+    local installStatus=$1
+
+    cd ${CUR_DIR}
+    echo -e "${Info} 下载${MBEDTLS_FILE}."
+    _echo -i "下载${MBEDTLS_FILE}."
+    download "${MBEDTLS_FILE}.tar.gz" "${MBEDTLS_URL}"
+    echo -e "${Info} 解压${MBEDTLS_FILE}."
+    _echo -i "解压${MBEDTLS_FILE}."
+    tar zxf ${MBEDTLS_FILE}.tar.gz
+    mv "mbedtls-${MBEDTLS_FILE}" ${MBEDTLS_FILE}
+    cd ${MBEDTLS_FILE}
+    echo -e "${Info} 编译安装${MBEDTLS_FILE}."
+    _echo -i "编译安装${MBEDTLS_FILE}."
+    make SHARED=1 CFLAGS=-fPIC
+    make DESTDIR=/usr install
+    if [ $? -ne 0 ]; then
+        echo -e "${Error} ${MBEDTLS_FILE} ${installStatus}失败."
+        _echo -e "${MBEDTLS_FILE} ${installStatus}失败."
+        install_cleanup
+        exit 1
+    fi
+@@ -180,7 +180,7 @@ install_mbedtls(){
+        mkdir -p $(dirname ${MBEDTLS_VERSION_FILE})
+    fi
+    echo ${MBEDTLS_VERSION} > ${MBEDTLS_VERSION_FILE}
+    echo -e "${Info} ${MBEDTLS_FILE} ${installStatus}成功 !"
+    _echo -i "${MBEDTLS_FILE} ${installStatus}成功 !"
+}
+
+install_mbedtls_logic(){
+@@ -193,7 +193,7 @@ install_mbedtls_logic(){
+        if check_latest_version ${currentMbedtlsVer} ${latestMbedtlsVer}; then
+            install_mbedtls '更新'
+        else
+            echo -e "${Info} ${MBEDTLS_FILE} 已经安装最新版本."
+            _echo -i "${MBEDTLS_FILE} 已经安装最新版本."
+        fi
+    fi
+}
+@@ -204,7 +204,7 @@ add_more_entropy(){
+    # CentOS 6 is installed by default but not started. CentOS 7 is not started by default after installation. CentOS 8 is installed and started by default.
+    local ENTROPY_SIZE_BEFORE=$(cat /proc/sys/kernel/random/entropy_avail)
+    if [[ ${ENTROPY_SIZE_BEFORE} -lt 1000 ]]; then
+        echo -e "${Info} 安装rng-tools之前熵池的熵值为${Green}${ENTROPY_SIZE_BEFORE}${suffix}"
+        _echo -i "安装rng-tools之前熵池的熵值为${Green}${ENTROPY_SIZE_BEFORE}${suffix}"
+        if [[ ! $(command -v rngd) ]]; then
+            package_install "rng-tools"
+        fi
+@@ -223,8 +223,8 @@ add_more_entropy(){
+        fi
+        sleep 5
+        local ENTROPY_SIZE_BEHIND=$(cat /proc/sys/kernel/random/entropy_avail)
+        echo -e "${Info} 安装rng-tools之后熵池的熵值为${Green}${ENTROPY_SIZE_BEHIND}${suffix}"
+        _echo -i "安装rng-tools之后熵池的熵值为${Green}${ENTROPY_SIZE_BEHIND}${suffix}"
+    else
+        echo -e "${Info} 当前熵池熵值大于或等于1000，未进行更多添加."
+        _echo -i "当前熵池熵值大于或等于1000，未进行更多添加."
+    fi 
+} 
+  4  
+utils/downloads.sh
+@@ -6,7 +6,7 @@ download(){
+        echo "${filename} 当前目录中不存在, 现在开始下载."
+        wget --no-check-certificate -c -t3 -T60 -O ${1} ${2}
+        if [ $? -ne 0 ]; then
+            echo -e "${Error} 下载 ${filename} 失败."
+            _echo -e "下载 ${filename} 失败."
+            exit 1
+        fi
+    fi
+@@ -78,7 +78,7 @@ judge_latest_version_num_is_none_and_output_error_info(){
+    local appName=$1
+    local latestVersion=$2
+
+    [ -z ${latestVersion} ] && echo -e "${Error} 获取${appName}最新版本号失败，退出运行." && exit 1
+    [ -z ${latestVersion} ] && _echo -e "获取${appName}最新版本号失败，退出运行." && exit 1
+}
+
+download_ss_file(){
+  2  
+utils/gen_certificates.sh
+@@ -113,7 +113,7 @@ acme_get_certificate_by_force(){
+    get_latest_acme_sh
+    set_defualt_ca_for_acme_sh
+    if [ ! "$(command -v socat)" ]; then
+        echo -e "${Info} 开始安装强制生成时必要的socat 软件包."
+        _echo -i "开始安装强制生成时必要的socat 软件包."
+        package_install "socat"
+    fi
+    _echo -i "开始生成域名 ${domain} 相关的证书 "
+  16  
+utils/update.sh
+@@ -14,7 +14,7 @@ judge_current_version_num_is_none_and_output_error_info(){
+    local appName=$1
+    local currentVersion=$2
+
+    [ -z ${currentVersion} ] && echo -e "${Error} 获取${appName}当前版本号失败，退出运行." && exit 1
+    [ -z ${currentVersion} ] && _echo -e "获取${appName}当前版本号失败，退出运行." && exit 1
+}
+
+judge_not_update_and_output_point_info(){
+@@ -45,15 +45,15 @@ update_download(){
+    local downloadFileName=$2
+    local SS_VERSION plugin_num
+
+    echo -e "${Info} 检测到${downloadFileName}有新版本，开始下载."
+    _echo -i "检测到${downloadFileName}有新版本，开始下载."
+    if $(judge_is_num "${downloadMark}"); then
+        plugin_num=${downloadMark}
+        download_plugins_file
+    else
+        SS_VERSION=${downloadMark}
+        download_ss_file
+    fi
+    echo -e "${Info} ${downloadFileName}下载完成，等待安装."
+    _echo -i "${downloadFileName}下载完成，等待安装."
+}
+
+update_install(){
+@@ -71,7 +71,7 @@ update_completed(){
+    local appName=$1
+    local latestVersion=$2
+
+    echo -e "${Info} ${appName}已成功升级为最新版本${latestVersion}" && echo
+    _echo -i "${appName}已成功升级为最新版本${latestVersion}" && echo
+    install_cleanup
+}
+
+@@ -212,18 +212,18 @@ update_caddy_v1(){
+
+    cd ${CUR_DIR}
+    currentVersion=$(caddy -version)
+    echo -e "${Info} 当前版本：${currentVersion}"
+    _echo -i "当前版本：${currentVersion}"
+    read -p "是否强制覆盖安装caddy(默认: n) [y/n]: " yn
+    [ -z "${yn}" ] && yn="N"
+    case "${yn:0:1}" in
+        y|Y)
+            caddyVerFlag="${versionMark}"
+            update_install "${packageName}" "${shFileName}" "${calledFuncName}"
+            latestVersion=$(caddy -version)
+            echo -e "${Info} 覆盖版本：${latestVersion}"
+            _echo -i "覆盖版本：${latestVersion}"
+            ;;
+        *)
+            echo -e "${Info} 跳过强制安装。"
+            _echo -i "跳过强制安装。"
+            ;;
+    esac
+
+@@ -247,7 +247,7 @@ update_caddy_v2(){
+    judge_current_version_num_is_none_and_output_error_info "${appName}" "${currentVersion}"
+    judge_latest_version_num_is_none_and_output_error_info "${appName}" "${latestVersion}"
+    judge_not_update_and_output_point_info "${appName}" "${currentVersion}" "${latestVersion}"
+    echo -e "${Info} 检测到${appName}有新版本，开始下载."
+    _echo -i "检测到${appName}有新版本，开始下载."
+    caddyVerFlag="${versionMark}"
+    update_install "${packageName}" "${shFileName}" "${calledFuncName}"
+    update_completed "${ssNameUpdate}" "${ssLatestVersion}"
+  2  
+utils/view_config.sh
+@@ -67,7 +67,7 @@ view_config_logic(){
+    fi
+
+    echo
+    echo -e "${Info} 如果什么都没有，表示未安装。"
+    _echo -i "如果什么都没有，表示未安装。"
+    echo
+}
+
+  2  
+webServer/caddy_install.sh
+@@ -43,7 +43,7 @@ ${Info} Caddy 安装完成！"
+
+install_caddy_v2(){
+    caddy_ver=$(wget --no-check-certificate -qO- https://api.github.com/repos/caddyserver/caddy/releases | grep -o '"tag_name": ".*"' | sed 's/"//g;s/v//g' | sed 's/tag_name: //g' | grep -E '^2' | head -n 1)
+    [ -z ${caddy_ver} ] && echo -e "${Error} 获取 caddy 最新版本失败." && exit 1
+    [ -z ${caddy_ver} ] && _echo -e "获取 caddy 最新版本失败." && exit 1
+    caddy_file="caddy_${caddy_ver}_linux_${ARCH}"
+    caddy_url="https://github.com/caddyserver/caddy/releases/download/v${caddy_ver}/caddy_${caddy_ver}_linux_${ARCH}.tar.gz"
+    download "${caddy_file}.tar.gz" "${caddy_url}"
+  6  
+webServer/nginx_install.sh
+@@ -37,7 +37,7 @@ check_sys_and_add_source(){
+        fi
+
+        if [ $? -eq 0 ]; then
+            echo -e "${Info} nginx安装成功."
+            _echo -i "nginx安装成功."
+        fi
+
+    elif check_sys sysRelease debian; then
+@@ -67,7 +67,7 @@ check_sys_and_add_source(){
+        sudo apt install -y nginx
+
+        if [ $? -eq 0 ]; then
+            echo -e "${Info} nginx安装成功."
+            _echo -i "nginx安装成功."
+        fi
+
+    elif check_sys sysRelease ubuntu && version_ge ${version} 16.04; then
+@@ -97,7 +97,7 @@ check_sys_and_add_source(){
+        sudo apt install -y nginx
+
+        if [ $? -eq 0 ]; then
+            echo -e "${Info} nginx安装成功."
+            _echo -i "nginx安装成功."
+        fi
+    fi
+}
+  2  
+webServer/prepare.sh
+@@ -12,7 +12,7 @@ is_enable_web_server(){
+                isEnableWeb=disable
+                ;;
+            *)
+                _echo -e "${Error} 输入有误，请重新输入."
+                _echo -e "输入有误，请重新输入."
+                continue
+                ;;
+        esac
